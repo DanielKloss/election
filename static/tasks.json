@@ -1,0 +1,142 @@
+[
+  {
+    "id": 1,
+    "title": "Dress To Impress",
+    "text": "64% of Salcombe constituents are passionate royalists. Show that you support the royal family with your dress choice. You can find campaign clothing options in the Entrance Hall",
+    "hidden": "Click here when your candidate is fully dressed",
+    "instruction": "What colour tie(s) is your candidate currently wearing?",
+    "questionType": "options",
+    "options": [
+      "red",
+      "blue",
+      "gold",
+      "red and blue",
+      "red and gold",
+      "blue and gold",
+      "all three"
+    ],
+    "answers": [
+      "red and blue"
+    ],
+    "completeMessage": "Red and blue mix to make the most regal of colours - purple.",
+    "incompleteMessage": "You needed to make the most regal of colours - purple. A mix of red and blue would have done that.",
+    "tickerSuccess": "is looking the part",
+    "tickerFail": "can't even get themselves dressed properly"
+  },
+  {
+    "id": 2,
+    "title": "Drink a Pint",
+    "text": "People don’t vote for the most qualified candidate, or the candidate that they are politically aligned with. They vote for the one they think would be the best laugh down the pub. Prove that is you by downing a pint as fast as possible. You can find a pint in the Kitchen. You have 1 attempt, remember to time it.",
+    "hidden": "",
+    "instruction": "How quickly did you down the pint?",
+    "questionType": "numerical",
+    "answers": [
+      "less",
+      "10"
+    ],
+    "completeMessage": "You're a right laugh. The voters wil love it. Absolute legend.",
+    "incompleteMessage": "How embarassing. Do you even know how to have fun?",
+    "tickerSuccess": "is a right good laugh",
+    "tickerFail": "in drunken escapade"
+  },
+  {
+    "id": 3,
+    "title": "Shake a Hand",
+    "text": "A strong handshake is essential for strong leadership. But shaking hands with the wrong person could be political suicide. Your team must practise shaking hands with the right people. A handshake between two people can only occur once. You can find the list of handshakes in the Sitting Room",
+    "hidden": "",
+    "instruction": "How many handshakes should take place?",
+    "questionType": "options",
+    "options": [
+      "none",
+      "one",
+      "two",
+      "three",
+      "four",
+      "five",
+      "six"
+    ],
+    "answers": [
+      "four"
+    ],
+    "completeMessage": "You're networking your way to success. Textbook schmoozing.",
+    "incompleteMessage": "If you are not careful you'll be photographed shaking hands with the next big dictator.",
+    "tickerSuccess": "pictured shaking hand of top charity worker",
+    "tickerFail": "pictured shaking hand of suspected peadophile"
+  },
+  {
+    "id": 4,
+    "title": "Secure Dodgy Funding",
+    "text": "It seems we spent all your campaign funds on cheese and champagne. You’ll need to secure some more. Our largest party donor has encrypted this message for you. Decrypt it to gain access to the funds. You can find the message in the Study",
+    "hidden": "",
+    "instruction": "What was the message?",
+    "questionType": "text",
+    "answers": [
+      "use this to cover up"
+    ],
+    "completeMessage": "More money means more dirty secrets can be hidden away from the voters.",
+    "incompleteMessage": "Without that funding you have no money to cover up your scandals.",
+    "tickerSuccess": "cleared of any wrongdoing in 'dog-gate'",
+    "tickerFail": "was in contact with dog during 'dog-gate'"
+  },
+  {
+    "id": 5,
+    "title": "Smear Opponent",
+    "text": "You don’t have to be a good or competent candidate, you just have to be better than all the others. Send a smear story to the local Salcombe Gazette about your opponent. You’d better encrypt your message so you don’t get caught spreading lies. Encrypt the following message using encryption key 4. You can find the message in the Wing Sitting Room.",
+    "hidden": "",
+    "instruction": "What was your encryption?",
+    "questionType": "text",
+    "answers": [
+      "they are all cunts"
+    ],
+    "completeMessage": "That doctored picture of your opponent will turn the voters against them.",
+    "incompleteMessage": "You accidentally sent a compromising picture of yourself to the newspaper!",
+    "tickerSuccess": "looking good as opponent is caught in compromising photo",
+    "tickerFail": "caught spreading fake news to local newspapers"
+  },
+  {
+    "id": 6,
+    "title": "Do Kickups",
+    "text": "Football is the national sport and hugely popular in Salcombe since their local team – Salcombe Town FC – have risen to the Premier League. Prove you are a party of the people by doing as many kickups as you can. You can find a ball outside. You have 3 attempts. Remember to write down your highest score.",
+    "hidden": "",
+    "instruction": "How many kickups did you do?",
+    "questionType": "numerical",
+    "answers": [
+      "more",
+      "10"
+    ],
+    "completeMessage": "Your sporting prowess will convince the voters that you're a person of the people.",
+    "incompleteMessage": "How embarassing. If you can't juggle a football how will you run the country?",
+    "tickerSuccess": "Exclusive - 'How I stay so down to earth and in touch with the hardworking families of Salcombe'",
+    "tickerFail": "is out of touch with the hardworking families of Salcombe"
+  },
+  {
+    "id": 7,
+    "title": "Create a Soundbite",
+    "text": "Our research shows that millennials have an average attention span of 3.8 seconds. Create a soundbite to grab their attention and votes. Our political scientists have provided some guidance for your soundbite. You can find the guidance in the Cinema Room",
+    "hidden": "",
+    "instruction": "What is your soundbite?",
+    "questionType": "text",
+    "answers": [
+      "salcombe means salcombe"
+    ],
+    "completeMessage": "That's just the kind of meaningless fodder that the electorate needs.",
+    "incompleteMessage": "Your soundbite offended the millennial snowflakes.",
+    "tickerSuccess": "trending on tiktok",
+    "tickerFail": "subject of hate in latest tiktok trend"
+  },
+  {
+    "id": 8,
+    "title": "Choose a Walk On Track",
+    "text": "You're going to need a banger for when you walk on stage to deliver your victory speech. You can find a snippet of the suggested song in the Wing Kitchen",
+    "hidden": "",
+    "questionType": "text",
+    "instruction": "What is the name of the song?",
+    "answers": [
+      "candy"
+    ],
+    "completeMessage": "That'll get the crowd going. Just make sure you practice your dance moves!",
+    "incompleteMessage": "How will your cool dance moves look if you don't even know the song?!",
+    "tickerSuccess": "shows off cool dance moves in viral stage rehersal video",
+    "tickerFail": "in cringe viral stage rehersal video"
+  }
+]

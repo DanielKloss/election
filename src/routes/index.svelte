@@ -1,16 +1,21 @@
 <script context="module">
-	export async function load({fetch, stuff}){
-		const tasksResponse = await fetch("https://api.jsonbin.io/v3/b/62dd0ca88ebcdb75883e6399", {
-			headers: {
-				"X-Master-Key": "$2b$10$aWj29BEZRf.vYyRISeB.3OPo6sF0UeRsMdMbXU.ZkwOypWfR8CVdO",
-				"X-Bin-Meta": "false"
-			}
-		});
-		const tasksResult = await tasksResponse.json();
+	import faunadb, { query as q } from 'faunadb';
+
+	const client = new faunadb.Client({
+			secret: "fnAEslFof5AAQopJqy0DcJ_mEllAyKEfOtw60ATK",
+			domain: 'db.us.fauna.com',
+			scheme: 'https'
+		})
+
+	export async function load({stuff}){
+		let tasks = await client.query(q.Map(
+            q.Paginate(q.Documents(q.Collection('tasks'))),
+            q.Lambda(x => q.Get(x))
+        ))
 
 		return {
 			props: {
-				tasks: tasksResult,
+				tasks: tasks.data,
 				parties: [stuff.partyOne, stuff.partyTwo]
 			}
 		};
@@ -18,22 +23,28 @@
 </script>
 
 <script>
+	import { Loader } from '@svelteuidev/core';
 	import { onMount } from 'svelte';
     import { selectedParty } from '../stores';
 
 	export let parties;
 	export let tasks;
-
+	
+	let currentTask;
 	let tasksCompleted = 0;
 	let answer;
 
 	let loading = true;
-
+	let taskComplete = "";
 	$: finished = tasksCompleted == tasks.length;
 
 	onMount(() => {
 		if (sessionStorage.getItem('party')) {
 			selectedParty.set(JSON.parse(sessionStorage.getItem('party') || '{}'));
+		}
+
+		if (sessionStorage.getItem('currentTask')) {
+			currentTask = sessionStorage.getItem('currentTask') || 0;
 		}
 
 		loading = false;
@@ -42,30 +53,85 @@
 	function selectParty(party) {
 		selectedParty.set(party);
 		sessionStorage.setItem('party', JSON.stringify(party));
+		
+		if ($selectedParty.id == 1){
+			currentTask = 7;
+		} else {
+			currentTask = 3;
+		}
+
+		sessionStorage.setItem('currentTask', currentTask);
+	}
+
+	async function processCorrectAnswer(){
+		let party = await client.query(q.Get(q.Match(q.Index("partyByAbbreviation"), "PISS")));
+		let points = party.data.points + 1;
+		await client.query(q.Update(q.Select("ref", q.Get(q.Match(q.Index("partyByAbbreviation"), "PISS"))), {
+			data: { points: points }
+		}));
+
+		// await client.query(q.Create('newsTicker', {data: {party: $selectedParty.abbreviation, news: $selectedParty.abbreviation + " candidate " + tasks[currentTask].data.tickerSuccess}}));
+		await client.query(q.Update(q.Ref(q.Collection("newsTicker"), "338462957094568002"),
+			{party: $selectedParty.colour, news: $selectedParty.abbreviation + " candidate " + tasks[currentTask].data.tickerSuccess}
+		));
+		taskComplete = "Good stuff! " + tasks[currentTask].data.completeMessage + " Well done, you've boosted your position in the polls.";
+	}
+
+	async function processIncorrectAnswer(){
+		// await client.query(q.Create('newsTicker', {data: {party: $selectedParty.abbreviation, news: $selectedParty.abbreviation + " candidate " + tasks[currentTask].data.tickerFail}}));
+		let news = await client.query(q.Get(q.Ref(q.Collection("newsTicker"), "338462957094568002")));
+		let newsList = news.data.news;
+		console.log(newsList)
+		await client.query(q.Update(q.Ref(q.Collection("newsTicker"), "338462957094568002"),
+			{data: {news:[{party: $selectedParty.colour, news: $selectedParty.abbreviation + " candidate " + tasks[currentTask].data.tickerFail}, ...newsList]}}
+		));
+		taskComplete = "Uh oh! " + tasks[currentTask].data.incompleteMessage + "Your blunder has damaged your position in the polls.";
 	}
 
 	async function submitAnswer() {
-		if (tasks[tasksCompleted].answers.some((a) => a == answer.toLowerCase())) {
-			//add points to party
-			parties.find(p => p.name == $selectedParty.name).points++;
-			console.log(parties)
-
-			//Add Points to database
-			const tasksResponse = await fetch("https://api.jsonbin.io/v3/b/62d96e8b2c868775a531d0bf", {
-				method: "PUT",
-				headers: {
-					"X-Master-Key": "$2b$10$aWj29BEZRf.vYyRISeB.3OPo6sF0UeRsMdMbXU.ZkwOypWfR8CVdO",
-					"Content-Type": "application/json"
-				},
-				body: await JSON.stringify(parties)
-			});
-
-			//Correct Message
-		} else {
-			//Incorrect Message
+		if (answer == ""){
+			return;
 		}
+		
+		loading = true;
+
+		if (tasks[currentTask].data.questionType == "numerical"){
+			let opertion = tasks[currentTask].data.answers[0];
+			let threshold = tasks[currentTask].data.answers[1];
+
+			if (opertion == "more"){
+				if (answer > threshold){
+					await processCorrectAnswer();
+				} else {
+					processIncorrectAnswer();
+				}
+			} else if (opertion == "less"){
+				if (answer < threshold){
+					await processCorrectAnswer();
+				} else {
+					await processIncorrectAnswer();
+				}
+			}
+		} else {
+			if (tasks[currentTask].data.answers.some((a) => a == answer.toLowerCase())) {
+				await processCorrectAnswer();
+			} else {
+				await processIncorrectAnswer();
+			}
+		}
+
 		answer = "";
+		if (currentTask == tasks.length-1) {
+          currentTask = 0;
+        } else {
+			currentTask++;
+		}
+
 		tasksCompleted++;
+
+		sessionStorage.setItem('currentTask', currentTask);
+		
+		loading = false;
 	}
 </script>
 
@@ -74,22 +140,50 @@
 		<div class="card titleBar partyBackground">
 			{$selectedParty.abbreviation} Task Dashboard
 		</div>
-		{#if !finished}
-			<div class="card">
-				<h2>{tasks[tasksCompleted].title}</h2>
-				<p>{tasks[tasksCompleted].text}</p>
+		{#if loading}
+			<div class="loader">
+				<Loader variant='dots' size='lg' color='gray'/>
 			</div>
-			{#if tasks[tasksCompleted].hidden != ""}
-				<button class="button partyBackground revealButton" on:click={() => tasks[tasksCompleted].hidden = ""}>{tasks[tasksCompleted].hidden}</button>
+		{:else if taskComplete != ""}
+			<div class="card">
+				<p>{taskComplete}</p>
+				<button class="button partyBackground submitButton" on:click={() => taskComplete = ""}>Next Task</button>
+			</div>
+		{:else if !finished}
+			<div class="card">
+				<h2>{tasks[currentTask].data.title}</h2>
+				<p>{tasks[currentTask].data.text}</p>
+			</div>
+			{#if tasks[currentTask].data.hidden != ""}
+				<button class="button partyBackground revealButton" on:click={() => tasks[currentTask].data.hidden = ""}>{tasks[currentTask].data.hidden}</button>
 			{:else}
-				<div class="card">
-					<p class="instructionText">{tasks[tasksCompleted].instruction}</p>
-					<input type="text" class="inputBox" bind:value={answer} />
-					<button class="button partyBackground submitButton" on:click={() => submitAnswer()}>Submit</button>
-				</div>
+				{#if tasks[currentTask].data.questionType == "numerical"}
+					<div class="card">
+						<p class="instructionText">{tasks[currentTask].data.instruction}</p>
+						<input type="number" class="inputBox" bind:value={answer} />
+						<button class="button partyBackground submitButton" on:click={() => submitAnswer()}>Submit</button>
+					</div>
+				{:else if tasks[currentTask].data.questionType == "options"}
+					<div class="card">
+						<p class="instructionText">{tasks[currentTask].data.instruction}</p>
+						<div class="options">
+							{#each tasks[currentTask].data.options as option}
+								<button class="button partyBackground optionButton" on:click={() => {answer = option; submitAnswer()}}>{option}</button>
+							{/each}
+						</div>
+					</div>
+				{:else if tasks[currentTask].data.questionType == "text"}
+					<div class="card">
+						<p class="instructionText">{tasks[currentTask].data.instruction}</p>
+						<input type="text" class="inputBox" bind:value={answer} />
+						<button class="button partyBackground submitButton" on:click={() => submitAnswer()}>Submit</button>
+					</div>
+				{/if}
 			{/if}
+		{:else}
+			<p>Tasks completed! All you can do now is wait for election night and hope you've done enough to trick... erm we mean, convince... the voters to vote for you! Meet in the Dining Room for the results.</p>
 		{/if}
-	{:else if !loading}
+	{:else}
 		<div class="card">
 			<h1 class="title">Login</h1>
 			<p>Select your party</p>
@@ -129,6 +223,17 @@
 		border-radius: 15px;
 	}
 
+	.options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+		justify-content: center;
+	}
+
+	.optionButton {
+		text-transform: capitalize;
+	}
+
 	.loginButtons {
 		display: flex;
 		justify-content: space-evenly;
@@ -151,6 +256,12 @@
 	.revealButton {
 		align-self: center;
 		width: 100%;
+	}
+
+	.loader {
+		display: flex;
+		justify-content: center;
+		margin-top: 1rem;
 	}
 
 	.inputBox {
