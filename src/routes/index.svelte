@@ -3,7 +3,7 @@
 	import query from 'faunadb';
 
 	const client = new faunadb.Client({
-			secret: "fnAEslFof5AAQopJqy0DcJ_mEllAyKEfOtw60ATK",
+			secret: import.meta.env.VITE_FAUNA_SECRET,
 			domain: 'db.us.fauna.com',
 			scheme: 'https'
 		})
@@ -24,7 +24,7 @@
 </script>
 
 <script>
-	import { Loader } from '@svelteuidev/core';
+	import { ENVIRONMENT, Loader } from '@svelteuidev/core';
 	import { onMount } from 'svelte';
     import { selectedParty } from '../stores';
 
