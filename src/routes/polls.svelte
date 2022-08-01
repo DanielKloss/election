@@ -3,7 +3,7 @@
 	import query from 'faunadb';
 
 	const client = new faunadb.Client({
-        secret: "fnAEslFof5AAQopJqy0DcJ_mEllAyKEfOtw60ATK",
+        secret: import.meta.env.VITE_FAUNA_SECRET,
         domain: 'db.us.fauna.com',
         scheme: 'https'
     })
@@ -16,8 +16,7 @@
 
 		return {
 			props: {
-				partyOne: stuff.partyOne,
-				partyTwo: stuff.partyTwo,
+				parties: [stuff.partyOne, stuff.partyTwo],
 				taskList: newsTicker.data[0].data.news
 			}
 		};
@@ -30,20 +29,20 @@
 	import HiSolidRefresh from "svelte-icons-pack/hi/HiSolidRefresh";
 	import { onMount } from 'svelte';
     import { selectedParty } from '../stores';
+	import PartySelector from '../lib/partySelector.svelte';
 
-	export let partyOne;
-	export let partyTwo;
+	export let parties;
 	export let taskList;
 
 	let loading = true;
 
-	$: relativeTeamOne = Math.round((partyOne.points / (partyOne.points + partyTwo.points)) * 100);
-	$: relativeTeamTwo = Math.round((partyTwo.points / (partyOne.points + partyTwo.points)) * 100);
+	$: relativeTeamOne = Math.round((parties[0].points / (parties[0].points + parties[1].points)) * 100);
+	$: relativeTeamTwo = Math.round((parties[1].points / (parties[0].points + parties[1].points)) * 100);
 
 	// THIS LIVE UI UPDATE DIDNT WORK. IT SUBSCRIBED AND RETRIEVED DATA FROM THE DATABASE BUT ONLY RECIEVED IT ON THE SERVER - I COULDNT WORK OUT HOW TO PASS IT TO THE UI
 	
 	// const client = new faunadb.Client({
-	// 	secret: "fnAEslFof5AAQopJqy0DcJ_mEllAyKEfOtw60ATK",
+	// 	secret: import.meta.env.VITE_FAUNA_SECRET,
 	// 	domain: 'db.us.fauna.com',
 	// 	scheme: 'https'
 	// })
@@ -61,11 +60,6 @@
 		loading = false;
 	});
 
-	function selectParty(party) {
-		selectedParty.set(party);
-		sessionStorage.setItem('party', JSON.stringify(party));
-	}
-
 	async function updateNewsFeed(){
 		loading = true;
 		let newsTicker = await client.query(q.Map(
@@ -75,11 +69,10 @@
 
 		taskList = newsTicker.data[0].data.news;
 		loading = false;
-		console.log("HERE")
 	}
 </script>
 
-<div class="page" style="--piss:{partyOne.colour}; --crap:{partyTwo.colour}; --partyColour:{$selectedParty?.colour}">
+<div class="page" style="--piss:{parties[0].colour}; --crap:{parties[1].colour}; --partyColour:{$selectedParty?.colour}">
 	{#if $selectedParty}
 		<div style="display:flex;">
 			<div class="card titleBar partyBackground" style="flex: 1;">
@@ -104,12 +97,12 @@
 			</div>
 			<div class="names">
 				<div class="name">
-					<p class="abbreviation">{partyOne.abbreviation}</p>
-					<p class="fullName">{partyOne.name}</p>
+					<p class="abbreviation">{parties[0].abbreviation}</p>
+					<p class="fullName">{parties[0].name}</p>
 				</div>
 				<div class="name" style="text-align: right;">
-					<p class="abbreviation">{partyTwo.abbreviation}</p>
-					<p class="fullName">{partyTwo.name}</p>
+					<p class="abbreviation">{parties[1].abbreviation}</p>
+					<p class="fullName">{parties[1].name}</p>
 				</div>
 			</div>
 		</div>
@@ -127,18 +120,7 @@
 			{/each}
 		</div>
 	{:else if !loading}
-		<div class="card">
-			<h1 class="title">Login</h1>
-			<p>Select your party</p>
-			<div class="loginButtons">
-				<button class="button pissBackground" on:click={() => selectParty(partyOne)}>
-					{partyOne.abbreviation}
-				</button>
-				<button class="button crapBackground" on:click={() => selectParty(partyTwo)}>
-					{partyTwo.abbreviation}
-				</button>
-			</div>
-		</div>
+		<PartySelector {parties}/>
 	{/if}
 </div>
 
@@ -180,21 +162,6 @@
 		background: transparent;
 		align-self: center;
 		margin: 0 1rem 0 1rem;
-	}
-
-	.loginButtons {
-		display: flex;
-		justify-content: space-evenly;
-	}
-
-	.button {
-		font-size: 1.5rem;
-		width: 40%;
-		background-color: #fff;
-		border-radius: 15px;
-		border-style: none;
-		box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
-		padding: 0.5rem;
 	}
 
 	.chart {
@@ -264,14 +231,6 @@
 		justify-content: center;
 		align-self: center;
 		margin: 0 1rem 0 1rem;
-	}
-
-	.pissForeground {
-		color: var(--piss);
-	}
-
-	.crapForeground {
-		color: var(--crap);
 	}
 
 	.pissBackground {
