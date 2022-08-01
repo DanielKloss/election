@@ -1,5 +1,6 @@
 <script context="module">
-	import faunadb, { query as q } from 'faunadb';
+	import faunadb from 'faunadb';
+	import query from 'faunadb';
 
 	const client = new faunadb.Client({
 			secret: "fnAEslFof5AAQopJqy0DcJ_mEllAyKEfOtw60ATK",
@@ -8,9 +9,9 @@
 		})
 
 	export async function load({stuff}){
-		let tasks = await client.query(q.Map(
-            q.Paginate(q.Documents(q.Collection('tasks'))),
-            q.Lambda(x => q.Get(x))
+		let tasks = await client.query(query.Map(
+            query.Paginate(query.Documents(query.Collection('tasks'))),
+            query.Lambda(x => query.Get(x))
         ))
 
 		return {
@@ -30,7 +31,7 @@
 	export let parties;
 	export let tasks;
 	
-	let currentTask;
+	let currentTask = {};
 	let tasksCompleted = 0;
 	let answer;
 
@@ -61,28 +62,28 @@
 		}
 
 		sessionStorage.setItem('currentTask', currentTask);
+
+		console.log(currentTask)
 	}
 
 	async function processCorrectAnswer(){
-		let party = await client.query(q.Get(q.Match(q.Index("partyByAbbreviation"), "PISS")));
+		let party = await client.query(query.Get(query.Match(query.Index("partyByAbbreviation"), "PISS")));
 		let points = party.data.points + 1;
-		await client.query(q.Update(q.Select("ref", q.Get(q.Match(q.Index("partyByAbbreviation"), "PISS"))), {
+		await client.query(query.Update(query.Select("ref", query.Get(query.Match(query.Index("partyByAbbreviation"), "PISS"))), {
 			data: { points: points }
 		}));
 
-		// await client.query(q.Create('newsTicker', {data: {party: $selectedParty.abbreviation, news: $selectedParty.abbreviation + " candidate " + tasks[currentTask].data.tickerSuccess}}));
-		await client.query(q.Update(q.Ref(q.Collection("newsTicker"), "338462957094568002"),
+		await client.query(query.Update(query.Ref(query.Collection("newsTicker"), "338462957094568002"),
 			{party: $selectedParty.colour, news: $selectedParty.abbreviation + " candidate " + tasks[currentTask].data.tickerSuccess}
 		));
 		taskComplete = "Good stuff! " + tasks[currentTask].data.completeMessage + " Well done, you've boosted your position in the polls.";
 	}
 
 	async function processIncorrectAnswer(){
-		// await client.query(q.Create('newsTicker', {data: {party: $selectedParty.abbreviation, news: $selectedParty.abbreviation + " candidate " + tasks[currentTask].data.tickerFail}}));
-		let news = await client.query(q.Get(q.Ref(q.Collection("newsTicker"), "338462957094568002")));
+		let news = await client.query(query.Get(query.Ref(query.Collection("newsTicker"), "338462957094568002")));
 		let newsList = news.data.news;
 		console.log(newsList)
-		await client.query(q.Update(q.Ref(q.Collection("newsTicker"), "338462957094568002"),
+		await client.query(query.Update(query.Ref(query.Collection("newsTicker"), "338462957094568002"),
 			{data: {news:[{party: $selectedParty.colour, news: $selectedParty.abbreviation + " candidate " + tasks[currentTask].data.tickerFail}, ...newsList]}}
 		));
 		taskComplete = "Uh oh! " + tasks[currentTask].data.incompleteMessage + "Your blunder has damaged your position in the polls.";

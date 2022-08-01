@@ -1,5 +1,6 @@
 <script context="module">
-	import faunadb, { query as q } from 'faunadb';
+	import faunadb from 'faunadb';
+	import query from 'faunadb';
 
 	const client = new faunadb.Client({
         secret: "fnAEslFof5AAQopJqy0DcJ_mEllAyKEfOtw60ATK",
@@ -8,9 +9,9 @@
     })
 
 	export async function load(){
-        let parties = await client.query(q.Map(
-            q.Paginate(q.Documents(q.Collection('parties'))),
-            q.Lambda(x => q.Get(x))
+        let parties = await client.query(query.Map(
+            query.Paginate(query.Documents(query.Collection('parties'))),
+            query.Lambda(x => query.Get(x))
         ))
 
 		return {
@@ -24,8 +25,6 @@
 
 <script>
 	import '../reset.css';
-
-	//Change order of tasks for both teams
 </script>
 
 <slot />
