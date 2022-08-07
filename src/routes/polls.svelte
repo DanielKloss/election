@@ -62,9 +62,9 @@
 
 	async function updateNewsFeed(){
 		loading = true;
-		let newsTicker = await client.query(q.Map(
-			q.Paginate(q.Documents(q.Collection('newsTicker'))),
-			q.Lambda(x => q.Get(x))
+		let newsTicker = await client.query(query.Map(
+			query.Paginate(query.Documents(query.Collection('newsTicker'))),
+			query.Lambda(x => query.Get(x))
 		))
 
 		taskList = newsTicker.data[0].data.news;

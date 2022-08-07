@@ -52,25 +52,28 @@
 	});
 
 	async function processCorrectAnswer(){
-		let party = await client.query(query.Get(query.Match(query.Index("partyByAbbreviation"), "PISS")));
+		console.log("correct")
+		let party = await client.query(query.Get(query.Match(query.Index("partyByAbbreviation"), $selectedParty.abbreviation)));
 		let points = party.data.points + 1;
-		await client.query(query.Update(query.Select("ref", query.Get(query.Match(query.Index("partyByAbbreviation"), "PISS"))), {
+		await client.query(query.Update(query.Select("ref", query.Get(query.Match(query.Index("partyByAbbreviation"), party.data.abbreviation))), {
 			data: { points: points }
 		}));
-
+		let news = await client.query(query.Get(query.Ref(query.Collection("newsTicker"), "338462957094568002")));
+		let newsList = news.data.news;
 		await client.query(query.Update(query.Ref(query.Collection("newsTicker"), "338462957094568002"),
-			{party: $selectedParty.colour, news: $selectedParty.abbreviation + " candidate " + tasks[$currentTask].data.tickerSuccess}
+			{data:{news:[{party: $selectedParty.colour, news: $selectedParty.abbreviation + " candidate " + tasks[$currentTask].data.tickerSuccess}, ...newsList]}}
 		));
 		taskComplete = "Good stuff! " + tasks[$currentTask].data.completeMessage + " Well done, you've boosted your position in the polls.";
 	}
 
 	async function processIncorrectAnswer(){
+		console.log("incorrect")
 		let news = await client.query(query.Get(query.Ref(query.Collection("newsTicker"), "338462957094568002")));
 		let newsList = news.data.news;
 		await client.query(query.Update(query.Ref(query.Collection("newsTicker"), "338462957094568002"),
 			{data: {news:[{party: $selectedParty.colour, news: $selectedParty.abbreviation + " candidate " + tasks[$currentTask].data.tickerFail}, ...newsList]}}
 		));
-		taskComplete = "Uh oh! " + tasks[$currentTask].data.incompleteMessage + "Your blunder has damaged your position in the polls.";
+		taskComplete = "Uh oh! " + tasks[$currentTask].data.incompleteMessage + " Your blunder has damaged your position in the polls.";
 	}
 
 	async function submitAnswer() {
@@ -81,16 +84,19 @@
 		loading = true;
 
 		if (tasks[$currentTask].data.questionType == "numerical"){
+			console.log("numerical")
 			let opertion = tasks[$currentTask].data.answers[0];
 			let threshold = tasks[$currentTask].data.answers[1];
 
 			if (opertion == "more"){
+				console.log("more")
 				if (answer > threshold){
 					await processCorrectAnswer();
 				} else {
-					processIncorrectAnswer();
+					await processIncorrectAnswer();
 				}
 			} else if (opertion == "less"){
+				console.log("less")
 				if (answer < threshold){
 					await processCorrectAnswer();
 				} else {
