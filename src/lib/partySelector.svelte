@@ -7,8 +7,6 @@
 		selectedParty.set(party);
 		sessionStorage.setItem('party', JSON.stringify(party));
 		
-console.log($selectedParty)
-
 		if ($selectedParty.abbreviation == "PISS"){
 			currentTask.set(7);
 		} else {

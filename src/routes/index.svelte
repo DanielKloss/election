@@ -52,7 +52,6 @@
 	});
 
 	async function processCorrectAnswer(){
-		console.log("correct")
 		let party = await client.query(query.Get(query.Match(query.Index("partyByAbbreviation"), $selectedParty.abbreviation)));
 		let points = party.data.points + 1;
 		await client.query(query.Update(query.Select("ref", query.Get(query.Match(query.Index("partyByAbbreviation"), party.data.abbreviation))), {
@@ -67,7 +66,6 @@
 	}
 
 	async function processIncorrectAnswer(){
-		console.log("incorrect")
 		let news = await client.query(query.Get(query.Ref(query.Collection("newsTicker"), "338462957094568002")));
 		let newsList = news.data.news;
 		await client.query(query.Update(query.Ref(query.Collection("newsTicker"), "338462957094568002"),
@@ -84,19 +82,16 @@
 		loading = true;
 
 		if (tasks[$currentTask].data.questionType == "numerical"){
-			console.log("numerical")
 			let opertion = tasks[$currentTask].data.answers[0];
 			let threshold = tasks[$currentTask].data.answers[1];
 
 			if (opertion == "more"){
-				console.log("more")
 				if (answer > threshold){
 					await processCorrectAnswer();
 				} else {
 					await processIncorrectAnswer();
 				}
 			} else if (opertion == "less"){
-				console.log("less")
 				if (answer < threshold){
 					await processCorrectAnswer();
 				} else {
@@ -172,10 +167,16 @@
 				{/if}
 			{/if}
 		{:else}
-			<p>Tasks completed! All you can do now is wait for election night and hope you've done enough to trick... erm we mean, convince... the voters to vote for you! Meet in the Dining Room for the results.</p>
+			<div class="card">
+				<p>Tasks completed! All you can do now is wait for election night and hope you've done enough to trick... erm we mean, convince... the voters to vote for you! Meet in the Dining Room for the results.</p>
+			</div>
 		{/if}
-	{:else}
+	{:else if !loading}
 		<PartySelector {parties}/>
+	{:else}
+		<div class="loader">
+			<Loader variant='dots' size='lg' color='gray'/>
+		</div>
 	{/if}
 </div>
 
